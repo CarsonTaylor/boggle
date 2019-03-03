@@ -12,14 +12,56 @@ to play the game boggle
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
+#include "trie.h"
+
+
+//build a trie from dictionary
+
 
 char** dice;
 int size;
 char** board;
+void initDice();
+void buildBoard();
 
 int main(int argc, char *argv[]) {
   //initializes board with size of 4x4, add code
   //for arbitrary board size later.
+  initDice();
+  //builds random board
+  buildBoard();
+
+  printf("\nHere is your boggle board.\n");
+  for(int i = 0; i < 4; i++){
+    for(int j = 0; j < 4; j++){
+      printf("%c ", board[i][j]);
+    }
+    printf("\n");
+  }
+
+  //buildTrie
+  FILE* dict = fopen("dict.txt", "r");
+  struct Node *root = getNode();
+  for (int i = 0; i < 369646; i++){
+      char* word = malloc(sizeof(char) * 30);
+      fscanf(dict, "%s", word);
+      insert(root, word);
+  }
+  fclose(dict);
+
+  //test and search trie
+  char* input = malloc(sizeof(char) * 30);
+  printf("Enter a word to find in the dictionary: ");
+  scanf("%s", input);
+  while(strcmp(input, "zzz") != 0){
+    bool result = search(root,input);
+    printf("%d\n", result);
+    scanf("%s",input);
+  }
+}
+
+void initDice(){
   //6 is number of sides on a dice
 
   size = 16;
@@ -44,10 +86,9 @@ int main(int argc, char *argv[]) {
   strcpy(dice[13], "EHINPS");
   strcpy(dice[14], "ELPSTU");
   strcpy(dice[15], "GILRUW");
+}
 
-  /*for(int i = 0; i < size; i++)
-    printf("%s\n", dice[i]);*/
-
+void buildBoard(){
   //builds randomly generated boards
   srand(time(0));
   //randDice is an array holding random order
@@ -75,13 +116,5 @@ int main(int argc, char *argv[]) {
       board[i][j] = dice[randDice[count]][diceFace];
       count++;
     }
-  }
-
-  printf("\nHere is your boggle board.\n");
-  for(int i = 0; i < 4; i++){
-    for(int j = 0; j < 4; j++){
-      printf("%c ", board[i][j]);
-    }
-    printf("\n");
   }
 }
