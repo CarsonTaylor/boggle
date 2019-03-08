@@ -36,8 +36,7 @@ void insert(struct Node *root, const char *key) {
 
     struct Node *pCrawl = root;
 
-    for (level = 0; level < length; level++)
-    {
+    for (level = 0; level < length; level++){
         index = charToIndex(key[level]);
         if (!pCrawl->children[index])
             pCrawl->children[index] = getNode();
@@ -57,8 +56,7 @@ bool search(struct Node *root, const char *key){
     int index;
     struct Node *pCrawl = root;
 
-    for (level = 0; level < length; level++)
-    {
+    for (level = 0; level < length; level++){
         index = charToIndex(key[level]);
 
         if (!pCrawl->children[index])
@@ -68,4 +66,22 @@ bool search(struct Node *root, const char *key){
     }
 
     return (pCrawl != NULL && pCrawl->isLeaf);
+}
+
+bool searchSubstring(struct Node *root, const char *key){
+  int level;
+  int length = strlen(key);
+  int index;
+  struct Node *pCrawl = root;
+  
+  for(level = 0; level < length; level++){
+    index = charToIndex(key[level]);
+
+    if (!pCrawl->children[index])
+      return false;
+
+    pCrawl = pCrawl->children[index];
+  }
+
+  return (pCrawl != NULL);
 }

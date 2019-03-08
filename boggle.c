@@ -52,12 +52,20 @@ int main(int argc, char *argv[]) {
 
   //test and search trie
   char* input = malloc(sizeof(char) * 30);
-  printf("Enter a word to find in the dictionary: ");
+  printf("Enter a substring to find in the dictionary: ");
   scanf("%s", input);
   while(strcmp(input, "zzz") != 0){
-    bool result = search(root,input);
+    bool result = searchSubstring(root,input);
     printf("%d\n", result);
     scanf("%s",input);
+  }
+
+``char* checkWord = "";
+  for(int i = 0; i < 4; i++){
+    for(int j = 0; j < 4; i++){
+
+      if(searchSubstring())
+    }
   }
 }
 
@@ -105,6 +113,7 @@ void buildBoard(){
     randDice[i] = temp;
   }
 
+  //allocate memory for board
   board = malloc(sizeof(char*) * 4);
   for(int i = 0; i < 4; i++)
     board[i] = malloc(sizeof(char) * 4);
