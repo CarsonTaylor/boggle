@@ -17,13 +17,26 @@ to play the game boggle
 
 
 //build a trie from dictionary
-
-
 char** dice;
 int size;
-char** board;
+char* board;
+int discovered[16];
+int searchTime;
+char color[16];
+int pi[16];
+int found[16];
+int visited[16];
+char word[16] = {'\0'};
+
 void initDice();
 void buildBoard();
+void dfsVisit(int graph[16][16],int u);
+
+void append(char* s, char c) {
+        int len = strlen(s);
+        s[len] = c;
+        s[len+1] = '\0';
+}
 
 int main(int argc, char *argv[]) {
   //initializes board with size of 4x4, add code
@@ -33,11 +46,10 @@ int main(int argc, char *argv[]) {
   buildBoard();
 
   printf("\nHere is your boggle board.\n");
-  for(int i = 0; i < 4; i++){
-    for(int j = 0; j < 4; j++){
-      printf("%c ", board[i][j]);
-    }
-    printf("\n");
+  for(int i = 0; i < size; i++){
+      printf("%c ", board[i]);
+      if((i+1) % 4 == 0)
+        printf("\n");
   }
 
   //buildTrie
@@ -47,6 +59,7 @@ int main(int argc, char *argv[]) {
       char* word = malloc(sizeof(char) * 30);
       fscanf(dict, "%s", word);
       insert(root, word);
+      free(word);
   }
   fclose(dict);
 
@@ -60,13 +73,95 @@ int main(int argc, char *argv[]) {
     scanf("%s",input);
   }
 
-``char* checkWord = "";
-  for(int i = 0; i < 4; i++){
-    for(int j = 0; j < 4; i++){
 
-      if(searchSubstring())
+  //adjacency matrix for graph of board
+  int adMat[16][16] = {
+      //   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+          {0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0},//0
+          {1,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0},//1
+          {0,1,0,1,0,1,1,1,0,0,0,0,0,0,0,0},//2
+          {0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0},//3
+          {1,1,0,0,0,1,0,0,1,1,0,0,0,0,0,0},//4
+          {1,1,1,0,1,0,1,0,1,1,1,0,0,0,0,0},//5
+          {0,1,1,1,0,1,0,1,0,1,1,1,0,0,0,0},//6
+          {0,0,1,1,0,0,1,0,0,0,1,1,0,0,0,0},//7
+          {0,0,0,0,1,1,0,0,0,1,0,0,1,1,0,0},//8
+          {0,0,0,0,1,1,1,0,1,0,1,0,1,1,1,0},//9
+          {0,0,0,0,0,1,1,1,0,1,0,1,0,1,1,1},//10
+          {0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,1},//11
+          {0,0,0,0,0,0,0,0,1,1,0,0,0,1,0,0},//12
+          {0,0,0,0,0,0,0,0,1,1,1,0,1,0,1,0},//13
+          {0,0,0,0,0,0,0,0,0,1,1,1,0,1,0,1},//14
+          {0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0} //15
+        };
+
+
+
+
+
+
+  //DFS textbook version
+
+  //old dynamic handling
+  /*color = malloc(sizeof(char)*size);
+  pi = malloc(sizeof(int)*size);
+  discovered = malloc(sizeof(int)*size);*/
+
+  //web dfs
+  /*for(int i = 0; i < 16; i++)
+    visited[i]=0;*/
+
+
+
+  for(int i = 0; i < 16; i++){
+    color[i] = 'w';
+    pi[i] = -1;
+  }
+  searchTime = 0;
+
+
+
+  dfsVisit(adMat,0);
+  printf("\nHere is your boggle board.\n");
+  for(int i = 0; i < size; i++){
+      printf("%c ", board[i]);
+      if((i+1) % 4 == 0)
+        printf("\n");
+  }
+
+}
+
+
+
+
+void dfsVisit(int graph[16][16],int u){
+
+  char tmp = board[u];
+  append(word,tmp);
+  printf("\n%s", word);
+
+  /*
+  int i;
+  visited[u] = 1;
+  for(i = 0; i < 16; i++){
+    if(!visited[i] && graph[u][i] == 1)
+      dfsVisit(graph,i);
+  }*/
+
+
+  //textbook version don't work
+  searchTime++;
+  discovered[u] = searchTime;
+  color[u] = 'g';
+  for(int v = 0; v < size; v++){
+    if(graph[u][v] == 1 && color[v] == 'w'){
+      pi[v] = u;
+      dfsVisit(graph,v);
     }
   }
+  color[u] = 'b';
+  searchTime++;
+  found[u] = searchTime;
 }
 
 void initDice(){
@@ -114,16 +209,12 @@ void buildBoard(){
   }
 
   //allocate memory for board
-  board = malloc(sizeof(char*) * 4);
-  for(int i = 0; i < 4; i++)
-    board[i] = malloc(sizeof(char) * 4);
+  board = malloc(sizeof(char) * size);
 
   int count = 0;
-  for(int i = 0; i < 4; i++){
-    for(int j = 0; j < 4; j++){
+  for(int i = 0; i < size; i++){
       int diceFace = rand() % 6;
-      board[i][j] = dice[randDice[count]][diceFace];
+      board[i] = dice[randDice[count]][diceFace];
       count++;
-    }
   }
 }
