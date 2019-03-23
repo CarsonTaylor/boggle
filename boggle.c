@@ -20,17 +20,25 @@ to play the game boggle
 char** dice;
 int size;
 char* board;
-int discovered[16];
+
+FILE* words;
+
+int* discovered;
+char* color;
+int* pi;
+int* found;
 int searchTime;
-char color[16];
-int pi[16];
-int found[16];
+
 int visited[16];
-char word[16] = {'\0'};
+
+char word[17] = {'\0'};
+
+struct Node *root;
 
 void initDice();
 void buildBoard();
 void dfsVisit(int graph[16][16],int u);
+void searchAdjacent(int graph[16][16],int i);
 
 void append(char* s, char c) {
         int len = strlen(s);
@@ -54,14 +62,17 @@ int main(int argc, char *argv[]) {
 
   //buildTrie
   FILE* dict = fopen("dict.txt", "r");
-  struct Node *root = getNode();
+  root = getNode();
   for (int i = 0; i < 369646; i++){
-      char* word = malloc(sizeof(char) * 30);
+      char* word = malloc(sizeof(char) * 32);
       fscanf(dict, "%s", word);
+      //printf("here %d ",i);
       insert(root, word);
       free(word);
   }
   fclose(dict);
+
+  words = fopen("foundWords.txt", "w");
 
   //test and search trie
   char* input = malloc(sizeof(char) * 30);
@@ -95,23 +106,17 @@ int main(int argc, char *argv[]) {
           {0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0} //15
         };
 
-
-
-
-
-
-  //DFS textbook version
-
-  //old dynamic handling
-  /*color = malloc(sizeof(char)*size);
-  pi = malloc(sizeof(int)*size);
-  discovered = malloc(sizeof(int)*size);*/
-
   //web dfs
   /*for(int i = 0; i < 16; i++)
     visited[i]=0;*/
 
+  //DFS textbook version
 
+  //old dynamic handling
+  /*discovered = malloc(sizeof(int)*size);
+  color = malloc(sizeof(char)*size);
+  pi = malloc(sizeof(int)*size);
+  found = malloc(sizeof(int)*size);
 
   for(int i = 0; i < 16; i++){
     color[i] = 'w';
@@ -120,8 +125,36 @@ int main(int argc, char *argv[]) {
   searchTime = 0;
 
 
+  dfsVisit(adMat,0);*/
 
-  dfsVisit(adMat,0);
+  for(int i = 0; i < 16; i++)
+    visited[i]=0;
+
+  for(int i = 0; i < size; i++){
+    append(word,board[i]);
+    visited[i] = 1;
+    char rootLetter[17] = {board[i]};
+
+    for(int j = 0; j < size; j++){
+      if(adMat[i][j] && !visited[j]){
+        append(word,board[j]);
+        visited[j] = 1;
+        int valid = searchSubstring(root,word);
+        if(valid){
+          searchAdjacent(adMat,i);
+          printf("valid prefix %s\n", word);
+        }
+        strcpy(word,rootLetter);
+        visited[j] = 0;
+      }
+    }
+
+    strcpy(word,"\0");
+    visited[i] = 0;
+  }
+
+  fclose(words);
+
   printf("\nHere is your boggle board.\n");
   for(int i = 0; i < size; i++){
       printf("%c ", board[i]);
@@ -129,15 +162,41 @@ int main(int argc, char *argv[]) {
         printf("\n");
   }
 
+
+}
+
+void searchAdjacent(int graph[16][16],int i){
+  char rootLetter[17] = {board[i]};
+
+  for(int j = 0; j < size; j++){
+    if(graph[i][j] && !visited[j]){
+      append(word,board[j]);
+      visited[j] = 1;
+      int valid = searchSubstring(root,word);
+
+      if(valid){
+        if(search(root,word)){
+          if (words == NULL){
+            printf("Error opening file!\n");
+            exit(1);
+          }
+          fprintf(words,"%s\n",word);
+        }
+
+
+
+        searchAdjacent(graph,i);
+        printf("valid prefix %s\n", word);
+      }
+      strcpy(word,rootLetter);
+      visited[j] = 0;
+    }
+  }
 }
 
 
-
-
 void dfsVisit(int graph[16][16],int u){
-
-  char tmp = board[u];
-  append(word,tmp);
+  append(word,board[u]);
   printf("\n%s", word);
 
   /*
@@ -149,7 +208,7 @@ void dfsVisit(int graph[16][16],int u){
   }*/
 
 
-  //textbook version don't work
+  //textbook version
   searchTime++;
   discovered[u] = searchTime;
   color[u] = 'g';
