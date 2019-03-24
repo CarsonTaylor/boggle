@@ -12,7 +12,6 @@ to play the game boggle
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <stdbool.h>
 #include "trie.h"
 #include <setjmp.h>
 
@@ -24,7 +23,7 @@ char* board;
 
 FILE* words;
 
-jmp_buf solved;
+
 
 int* discovered;
 char* color;
@@ -49,7 +48,7 @@ void initDice();
 void buildBoard();
 void dfsVisit(int graph[16][16],int u);
 void searchAdjacent(int graph[16][16],int i);
-void findWords(int start, int used[16], int checked[16], int graph[16][16]);
+void findWords(int start, int used[16], int checked[16], int graph[16][16], jmp_buf solved);
 
 void append(char* s, char c) {
         int len = strlen(s);
@@ -67,12 +66,12 @@ int main(int argc, char *argv[]) {
   //for arbitrary board size later.
   initDice();
   //builds random board
-  //buildBoard();
+  buildBoard();
 
   ///////////TEST BOARD/////////
   ///////////////////////////////
-  board = malloc(sizeof(char) * size);
-  strcpy(board,"RORMOKTBFSAINENE");
+  //board = malloc(sizeof(char) * size);
+  //strcpy(board,"RORMOKTBFSAINENE");
   ////////////////////////////////
 
   printf("\nHere is your boggle board.\n");
@@ -152,14 +151,7 @@ int main(int argc, char *argv[]) {
   words = fopen("foundWords.txt", "w");
 
 
-
-  for(int i = 0; i < size; i++){
-    used[i] = 0;
-    checked[i] = 0;
-    prevStack[i] = -1;
-  }
-
-
+  //initialize neighbour arrays with proper values
   for(int i = 0; i < size; i++){
     for(int j = 0; j < size; j++){
       if(adMat[i][j])
@@ -167,9 +159,18 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  for(int i = 0; i < size; i++){
+    for(int i = 0; i < size; i++){
+      used[i] = 0;
+      checked[i] = 0;
+      prevStack[i] = -1;
+    }
+    word[0] = '\0';
+    jmp_buf solved;
+    startstart = i;
+    if(!setjmp(solved)) findWords(i,used,checked,adMat,solved);
+  }
 
-  startstart = 6;
-  if(!setjmp(solved)) findWords(6,used,checked,adMat);
 
   /*int input2 = 0;
   printf("Enter a letter index to search from: ");
@@ -210,15 +211,15 @@ int main(int argc, char *argv[]) {
 
   fclose(words);
 
-  /*printf("\nHere is your boggle board.\n");
+  printf("\nHere is your boggle board.\n");
   for(int i = 0; i < size; i++){
       printf("%c ", board[i]);
       if((i+1) % 4 == 0)
         printf("\n");
-  }*/
+  }
 }
 
-void findWords(int start, int used[16], int checked[16], int graph[16][16]){
+void findWords(int start, int used[16], int checked[16], int graph[16][16], jmp_buf solved){
   //checks if first call
   if(!used[start]){
     append(word,board[start]);
@@ -319,7 +320,7 @@ void findWords(int start, int used[16], int checked[16], int graph[16][16]){
     }
     printf("\n");
 
-    findWords(start,used,checked,graph);
+    findWords(start,used,checked,graph,solved);
 
   }
 
@@ -355,7 +356,7 @@ void findWords(int start, int used[16], int checked[16], int graph[16][16]){
           printf("%d ", prevStack[j]);
         printf("\n\n");
 
-        findWords(i,used,checked,graph);
+        findWords(i,used,checked,graph,solved);
       }
       else{
         printf("el %s\n",word);
@@ -367,7 +368,7 @@ void findWords(int start, int used[16], int checked[16], int graph[16][16]){
         depend(word);
         checked[i] = 1;
 
-        findWords(start,used,checked,graph);
+        findWords(start,used,checked,graph,solved);
       }
     }
 
