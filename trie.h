@@ -1,7 +1,7 @@
 //trie node struct
 struct Node {
   struct Node *children[26];
-  bool isLeaf;
+  int isLeaf;
 };
 
 
@@ -19,7 +19,7 @@ struct Node *getNode(){
   if (pNode){
       int i;
 
-      pNode->isLeaf = false;
+      pNode->isLeaf = 0;
 
       for (i = 0; i < 26; i++)
           pNode->children[i] = NULL;
@@ -45,12 +45,12 @@ void insert(struct Node *root, const char *key) {
     }
 
     // mark last node as leaf
-    pCrawl->isLeaf = true;
+    pCrawl->isLeaf = 1;
 }
 
 //borrowed from geeksforgeeks
 // Returns true if key presents in trie, else false
-bool search(struct Node *root, const char *key){
+int search(struct Node *root, const char *key){
     int level;
     int length = strlen(key);
     int index;
@@ -60,7 +60,7 @@ bool search(struct Node *root, const char *key){
         index = charToIndex(key[level]);
 
         if (!pCrawl->children[index])
-            return false;
+            return 0;
 
         pCrawl = pCrawl->children[index];
     }
@@ -68,17 +68,17 @@ bool search(struct Node *root, const char *key){
     return (pCrawl != NULL && pCrawl->isLeaf);
 }
 
-bool searchSubstring(struct Node *root, const char *key){
+int searchSubstring(struct Node *root, const char *key){
   int level;
   int length = strlen(key);
   int index;
   struct Node *pCrawl = root;
-  
+
   for(level = 0; level < length; level++){
     index = charToIndex(key[level]);
 
     if (!pCrawl->children[index])
-      return false;
+      return 0;
 
     pCrawl = pCrawl->children[index];
   }

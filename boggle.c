@@ -12,8 +12,11 @@ to play the game boggle
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "trie.h"
 #include <setjmp.h>
+
+#include "trie.h"
+#include "trimWords.h"
+
 
 
 //build a trie from dictionary
@@ -85,7 +88,7 @@ int main(int argc, char *argv[]) {
   //buildTrie
   FILE* dict = fopen("dict.txt", "r");
   root = getNode();
-  for (int i = 0; i < 369646; i++){
+  for (int i = 0; i < 194206; i++){
       char* word = malloc(sizeof(char) * 32);
       fscanf(dict, "%s", word);
       //printf("here %d ",i);
@@ -150,7 +153,6 @@ int main(int argc, char *argv[]) {
   //finding words
   words = fopen("foundWords.txt", "w");
 
-
   //initialize neighbour arrays with proper values
   for(int i = 0; i < size; i++){
     for(int j = 0; j < size; j++){
@@ -210,6 +212,7 @@ int main(int argc, char *argv[]) {
   }*/
 
   fclose(words);
+  trimWords();
 
   printf("\nHere is your boggle board.\n");
   for(int i = 0; i < size; i++){
@@ -217,6 +220,8 @@ int main(int argc, char *argv[]) {
       if((i+1) % 4 == 0)
         printf("\n");
   }
+
+
 }
 
 void findWords(int start, int used[16], int checked[16], int graph[16][16], jmp_buf solved){
@@ -375,36 +380,6 @@ void findWords(int start, int used[16], int checked[16], int graph[16][16], jmp_
   }
 }
 
-
-//first stab at finding words
-/*void searchAdjacent(int graph[16][16],int i){
-  char rootLetter[17] = {board[i]};
-
-  for(int j = 0; j < size; j++){
-    if(graph[i][j] && !visited[j]){
-      append(word,board[j]);
-      visited[j] = 1;
-      int valid = searchSubstring(root,word);
-
-      if(valid){
-        if(search(root,word)){
-          if (words == NULL){
-            printf("Error opening file!\n");
-            exit(1);
-          }
-          fprintf(words,"%s\n",word);
-        }
-
-
-
-        searchAdjacent(graph,i);
-        printf("valid prefix %s\n", word);
-      }
-      strcpy(word,rootLetter);
-      visited[j] = 0;
-    }
-  }
-}*/
 
 
 void dfsVisit(int graph[16][16],int u){
