@@ -19,7 +19,7 @@ finding words
 
 #include "trie.h"
 #include "trimWords.h"
-#include "adjacency.c"
+#include "adjacency.h"
 
 //variables for board
 char** dice;
@@ -107,34 +107,15 @@ int main(int argc, char *argv[]) {
 
 
   //adjacency matrix for graph of board
-  /*int adMat[16][16] = {
-      //   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
-          {0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0},//0
-          {1,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0},//1
-          {0,1,0,1,0,1,1,1,0,0,0,0,0,0,0,0},//2
-          {0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0},//3
-          {1,1,0,0,0,1,0,0,1,1,0,0,0,0,0,0},//4
-          {1,1,1,0,1,0,1,0,1,1,1,0,0,0,0,0},//5
-          {0,1,1,1,0,1,0,1,0,1,1,1,0,0,0,0},//6
-          {0,0,1,1,0,0,1,0,0,0,1,1,0,0,0,0},//7
-          {0,0,0,0,1,1,0,0,0,1,0,0,1,1,0,0},//8
-          {0,0,0,0,1,1,1,0,1,0,1,0,1,1,1,0},//9
-          {0,0,0,0,0,1,1,1,0,1,0,1,0,1,1,1},//10
-          {0,0,0,0,0,0,1,1,0,0,1,0,0,0,1,1},//11
-          {0,0,0,0,0,0,0,0,1,1,0,0,0,1,0,0},//12
-          {0,0,0,0,0,0,0,0,1,1,1,0,1,0,1,0},//13
-          {0,0,0,0,0,0,0,0,0,1,1,1,0,1,0,1},//14
-          {0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0} //15
-        };*/
   int** adMat;
   adMat = adjacencyMatrix(dimension);
 
-  printf("\n");
+  /*printf("\n");
   for(int i = 0; i < size; i++){
     for(int j = 0; j < size; j++)
      printf("%d ",adMat[i][j]);
     printf("\n");
-  }
+  }*/
 
   //initialize found words file
   foundWords = fopen("foundWords.txt", "w");
@@ -150,15 +131,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  printf(" -neighbours- \n");
-  for(int i = 0; i < size; i++){
-      printf("%d ", neighbours[i]);
-      if((i+1) % dimension == 0)
-        printf("\n");
-  }
-
-  printf("after neighbour malloc\n");
-
   used = malloc(sizeof(int) * size);
   checked = malloc(sizeof(int) * size);
   prevStack = malloc(sizeof(int) * size);
@@ -169,7 +141,7 @@ int main(int argc, char *argv[]) {
       checked[i] = 0;
       prevStack[i] = -1;
     }
-    printf("after other mallocs\n");
+    //printf("after other mallocs\n");
     word[0] = '\0';
     jmp_buf solved;
     startstart = i;
@@ -186,75 +158,69 @@ int main(int argc, char *argv[]) {
   }*/
 
   fclose(foundWords);
+  end = clock();
+  cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+  printf("Found all words in a %d x %d board in %f seconds\n",dimension,dimension,cpu_time_used);
+
   trimWords();
 
 
 
-  printf("\nHere is your boggle board.\n");
+  /*printf("\nHere is your boggle board.\n");
   for(int i = 0; i < size; i++){
       printf("%c ", board[i]);
       if((i+1) % dimension == 0)
         printf("\n");
-  }
+  }*/
 
-  end = clock();
-  cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-  printf("Found all words in a %d x %d board in %f seconds\n",dimension,dimension,cpu_time_used);
+
+
 
 
 }
 
 //search w/out error printing
-/*void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
+void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
   //checks if first call
   if(!used[start]){
     append(word,board[start]);
     used[start] = 1;
   }
-
   //determines number of neighbours visited
   int neighboursVisited = 0;
   for(int i = 0; i < size; i++){
     if(graph[start][i] && (checked[i] || used[i]))
       neighboursVisited++;
   }
-
   //checks to see if all neighbours visited, if so, runs dead end procedure
   if(neighboursVisited == neighbours[start]){
     //BASE CASE - if back at beginning search index, hard return
     if(start == startstart)
       longjmp(solved, 1);
-
     //dead-end procedure
     //uncheck appropiate squarea
     for(int i = start+1; i < size; i++){
       checked[i] = 0;
     }
-
     checked[start] = 1;
     used[start] = 0;
     depend(word);
-
     //set appropiate checked squares for new tail
     for(int i = 0; i < size; i++)
       if(graph[prevStack[top]][i] && i < start && !used[i])
         checked[i] = 1;
-
     //set new tail of word from stack
     start = prevStack[top];
     for(int i = top; i < size; i++)
       prevStack[i] = -1;
     top--;
-
     //reset non-adjacent squares
     for(int i = 0; i < size; i++){
       if(!graph[start][i])
         checked[i] = 0;
     }
-
     findWords(start,used,checked,graph,solved);
   }
-
   //modified dfs with used and checked instead of visited
   //used is part of the word, checked is a box that does not
   //create a valid prefix
@@ -270,27 +236,23 @@ int main(int argc, char *argv[]) {
           }
           fprintf(foundWords,"%s\n",word);
         }
-
         used[i] = 1;
         top++;
         prevStack[top] = start;
-
         for(int i = 0; i < size; i++){
           checked[i] = 0;
         }
-
         findWords(i,used,checked,graph,solved);
       }
       //else mark that square checked and backtrack
       else{
         depend(word);
         checked[i] = 1;
-
         findWords(start,used,checked,graph,solved);
       }
     }
   }
-}*/
+}
 
 void initDice(){
   printf("top of initDice\n");
@@ -367,7 +329,7 @@ void depend(char* s) {
 }
 
 //this method works, with error check printing
-void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
+/*void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
   //checks if first call
   if(!used[start]){
     append(word,board[start]);
@@ -500,4 +462,4 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
       }
     }
   }
-}
+}*/
