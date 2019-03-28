@@ -227,7 +227,8 @@ void setEdgeNeighbours(int** list, int index){
   return;
 }
 
-int** adjacencyList(int** list, int n){
+int** adjacencyList(int n){
+  int** list;
   dim = n;
   size = n*n;
 
