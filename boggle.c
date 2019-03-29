@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
   //gets and sets dimension and size of board
   dimension = 0;
   printf("Enter the dimesion of your board, n -- (board will be n x n squares)\n\n");
-  printf("Board sizes larger than 100 may take more than 15 seconds to run\n\n-> ");
+  printf("Board sizes larger than 100 may take not fit on screen\n\n-> ");
   scanf("%d",&dimension);
   size = dimension*dimension;
 
