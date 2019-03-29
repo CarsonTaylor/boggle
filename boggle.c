@@ -17,7 +17,6 @@ finding words
 #include <setjmp.h>
 
 #include "trie.h"
-#include "trimWords.h"
 #include "adjacency.h"
 
 //holds array of dice with proper letters
@@ -35,23 +34,18 @@ FILE* foundWords;
 int* used;
 int* checked;
 int* neighbours;
-
 int* prevStack;
 int top = -1;
-
 int startLetter;
-
 char word[50] = {'\0'};
-
-//variables for runtime testing
-unsigned long long calls = 0;
-double time_in_loop = 0.0;
-
 
 //root of lookup trie
 struct Node *root;
 //root of trie for foundWords
 struct Node *foundRoot;
+
+//total score
+unsigned long totalScore;
 
 void initDice();
 void buildBoard();
@@ -59,45 +53,32 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved);
 void append(char* s, char c);
 void depend(char* s);
 int isLower(char* s);
+void welcome();
+void displayBoard();
+int score(char* word);
 
 int main(int argc, char *argv[]) {
-  char ESC=27;
-  printf("%c[1m",ESC);  /*- turn on bold */
-  printf("%c[5m",ESC);  /*- turn on bold */
-  printf("%c[92m",ESC);  /*- turn on bold */
-  printf("WELCOME TO BOGGLE\n");
-  printf("%c[0m",ESC); /* turn off bold */
+  //welcome sequence
+  welcome();
 
   //gets and sets dimension and size of board
-  size = 0;
   dimension = 0;
-
-  printf("Enter board dimension n -- (board will be n x n squares)\n");
+  printf("Enter the dimesion of your board, n -- (board will be n x n squares)\n\n");
+  printf("Board sizes larger than 100 may take significantly longer to run\n\n-> ");
   scanf("%d",&dimension);
-  size = dimension * dimension;
+  size = dimension*dimension;
 
-
+  if(dimension == 0){
+    printf("Invalid board size. Exiting program\n\n");
+    exit(1);
+  }
 
   //initializes dice with appropiate letters for
   //proper boggle letter distribution
   initDice();
-  //builds random board
+  //build and display random board of specified size
   buildBoard();
-
-  ///////////TEST BOARD/////////
-  ///////////////////////////////
-  //board = malloc(sizeof(char) * size);
-  //strcpy(board,"LEIUNXMOIHWEMSIL");
-  ////////////////////////////////
-
-  //display board
-  printf("\nHere is your boggle board.\n");
-  for(int i = 0; i < size; i++){
-      printf("%c ", board[i]-32);
-      if((i+1) % dimension == 0)
-        printf("\n");
-  }
-  printf("\n");
+  displayBoard();
 
   //build trie from dictionary file
   FILE* dict = fopen("dict.txt", "r");
@@ -110,22 +91,6 @@ int main(int argc, char *argv[]) {
     }
   }
   fclose(dict);
-
-  //test and search trie
-  /*char* input = malloc(sizeof(char) * 30);
-  printf("Enter a substring to find in the dictionary: ");
-  scanf("%s", input);
-  while(strcmp(input, "zzz") != 0){
-    if(isLower(input)){
-      int result = searchSubstring(root,input);
-      printf("%d\n", result);
-      scanf("%s",input);
-    }
-    else{
-      printf("Invalid input, please input words with only lowercase letters\n");
-      scanf("%s",input);
-    }
-  }*/
 
   //initialize variables for runtime calculation
   clock_t start,end;
@@ -150,6 +115,9 @@ int main(int argc, char *argv[]) {
   }
 
   //allocate space for search arrays
+  //used is part of the word
+  //checked is an index that does not create a valid prefix
+  //prevStack holds the indexes of letters already used in the current word
   used = malloc(sizeof(int) * size);
   checked = malloc(sizeof(int) * size);
   prevStack = malloc(sizeof(int) * size);
@@ -171,12 +139,28 @@ int main(int argc, char *argv[]) {
     if(!setjmp(solved)) findWords(i,used,checked,adList,solved);
   }
 
+  //stop runtime calculations
   end = clock();
   cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 
-
-  printf("Found all words in a %d x %d board in %f seconds\n",dimension,dimension,cpu_time_used);
-  printf("took %llu calls\n",calls);
+  //check words inputted by user
+  char* input = malloc(sizeof(char) * 50);
+  printf("Enter found words (enter DONE to stop): ");
+  scanf("50%s", input);
+  while(strncmp(input, "DONE", 4) != 0){
+    if(isLower(input)){
+      int result = search(foundRoot,input);
+      if(result)
+        printf("\nValid: Score - %d\n",score(input));
+      else
+        printf("Invalid word\n");
+      scanf("%s",input);
+    }
+    else{
+      printf("Invalid input, please input words with only lowercase letters\n");
+      scanf("%s",input);
+    }
+  }
 
   //display all found words
   int level = 0;
@@ -185,22 +169,14 @@ int main(int argc, char *argv[]) {
   display(foundRoot,str,level,&tab);
   printf("\n\n");
 
-  printf("Found all words in a %d x %d board in %f seconds\n",dimension,dimension,cpu_time_used);
-  printf("took %llu calls\n",calls);
-  printf("Time in loop in %f seconds\n",time_in_loop);
+  printf("Computer found all words in a %d x %d board in %f seconds\n",dimension,dimension,cpu_time_used);
+  printf("Your total score is %lu\n\n",totalScore);
 
-
-
-
-
-
-
-
+  return(0);
 }
 
-//search w/out error printing
+//recursive seach for words starting at index start
 void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
-  calls++;
   //checks if first call
   if(!used[start]){
     append(word,board[start]);
@@ -238,9 +214,6 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
       prevStack[i] = -1;
     top--;
 
-    //////////////////
-    clock_t loopstart,loopend;
-    loopstart = clock();
     for(int i = start - (dim*2) - 2; i < start + (dim*2) + 2; i++){
       if(i < size){
         for(int j = 0; j < 9; j++){
@@ -253,8 +226,6 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
         }
       }
     }
-    loopend = clock();
-    time_in_loop += ((double) (loopend - loopstart)) / CLOCKS_PER_SEC;
 
     findWords(start,used,checked,graph,solved);
   }
@@ -263,7 +234,6 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
   //used is part of the word, checked is a box that does not
   //create a valid prefix
   for(int i = 0; i < 9; i++){
-
     if(graph[start][i] != -1 && (!used[graph[start][i]] && !checked[graph[start][i]])){
       append(word,board[graph[start][i]]);
       if(searchSubstring(root,word)){
@@ -271,6 +241,7 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
           if(!search(foundRoot,word))
             insert(foundRoot,word);
         }
+
         used[graph[start][i]] = 1;
         top++;
         prevStack[top] = start;
@@ -284,13 +255,14 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
       else{
         depend(word);
         checked[graph[start][i]] = 1;
-
         findWords(start,used,checked,graph,solved);
       }
     }
   }
 }
 
+//initializes dice with appropiate letters for
+//proper boggle letter distribution
 void initDice(){
   //6 is number of sides on a dice
   dice = malloc(sizeof(char*) * 16);
@@ -298,22 +270,22 @@ void initDice(){
     dice[i] = malloc(sizeof(char) * 6);
 
   //assigns dice values for classic boggle
-  strcpy(dice[0], "aaciot");
-  strcpy(dice[1], "abilty");
-  strcpy(dice[2], "abjmoq");
-  strcpy(dice[3], "acdemp");
-  strcpy(dice[4], "acelrs");
-  strcpy(dice[5], "adenvz");
-  strcpy(dice[6], "ahmors");
-  strcpy(dice[7], "biforx");
-  strcpy(dice[8], "denosw");
-  strcpy(dice[9], "dknotu");
-  strcpy(dice[10], "eefhiy");
-  strcpy(dice[11], "egkluy");
-  strcpy(dice[12], "egintv");
-  strcpy(dice[13], "ehinps");
-  strcpy(dice[14], "elpstu");
-  strcpy(dice[15], "gilruw");
+  strncpy(dice[0], "aaciot",7);
+  strncpy(dice[1], "abilty",7);
+  strncpy(dice[2], "abjmoq",7);
+  strncpy(dice[3], "acdemp",7);
+  strncpy(dice[4], "acelrs",7);
+  strncpy(dice[5], "adenvz",7);
+  strncpy(dice[6], "ahmors",7);
+  strncpy(dice[7], "biforx",7);
+  strncpy(dice[8], "denosw",7);
+  strncpy(dice[9], "dknotu",7);
+  strncpy(dice[10], "eefhiy",7);
+  strncpy(dice[11], "egkluy",7);
+  strncpy(dice[12], "egintv",7);
+  strncpy(dice[13], "ehinps",7);
+  strncpy(dice[14], "elpstu",7);
+  strncpy(dice[15], "gilruw",7);
 }
 
 //builds randomly generated boards
@@ -364,6 +336,7 @@ void depend(char* s) {
     s[len-1] = '\0';
 }
 
+//returns 1 if all chars in s are lowercase letters
 int isLower(char* s){
   int len = strlen(s);
   for(int i = 0; i < len; i++){
@@ -373,182 +346,48 @@ int isLower(char* s){
   return 1;
 }
 
-//this method works, with error check printing
-/*void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
-  //checks if first call
-  if(!used[start]){
-    append(word,board[start]);
-    used[start] = 1;
-  }
+//welcome sequence printing
+void welcome(){
+  char ESC=27;
+  printf("%c[1m",ESC);  /*- turn on bold */
+  printf("%c[5m",ESC);  /*- turn on bold */
+  printf("%c[92m",ESC);  /*- turn on bold */
+  printf("\n\t\tWELCOME TO BOGGLE\n\n");
+  printf("%c[0m",ESC); /* turn off bold */
+}
 
-
-
-  //checks to see if neighbours visited, if so, runs dead end procedure
-  //prints checked and used arrays for error checking
-  int neighboursVisited = 0;
-  for(int i = 0; i < 9; i++){
-    if(graph[start][i] != -1 && (checked[graph[start][i]] || used[graph[start][i]]))
-      neighboursVisited++;
-  }
-  printf("nv %d\n", neighboursVisited);
-  if(neighboursVisited == neighbours[start]){
-    //BASE CASE - if back at beginning search index, hard return
-    if(start == startLetter)
-      longjmp(solved, 1);
-
-    //error check printing
-    printf("\n");
-    for(int i = 0; i < size; i++){
-      printf("%d ", used[i]);
+//display board
+void displayBoard(){
+  printf("\nHere is your boggle board.\n\n\t");
+  for(int i = 0; i < size; i++){
+      printf("%c ", board[i]-32);
       if((i+1) % dimension == 0)
-        printf("\n");
-    }
-    printf("\n");
-    printf("\n");
-    for(int i = 0; i < size; i++){
-        printf("%d ",checked[i]);
-        if((i+1) % dimension == 0)
-          printf("\n");
-    }
-    printf("\n");
-
-    for(int i = 0; i<size;i++)
-      printf("%d ", prevStack[i]);
-    printf("\n");
-
-    //dead-end procedure
-    for(int i = start+1; i < start+dim+3; i++){
-      if(i < size)
-        checked[i] = 0;
-    }
-
-    checked[start] = 1;
-    used[start] = 0;
-    depend(word);
-
-
-    //error check printing
-    printf("current tail %d\n",start);
-    for(int i = 0; i<size;i++)
-      printf("%d ", prevStack[i]);
-
-    for(int i = 0; i < 9; i++){
-      if(graph[prevStack[top]][i] != -1 && graph[prevStack[top]][i] < start &&
-         !used[graph[prevStack[top]][i]])
-        checked[graph[prevStack[top]][i]] = 1;
-    }
-
-    ///////
-    //find cells adjacent to previous but not adjacent to start and
-    //set to 0
-    int flag = 0;
-    for(int i = 0; i < 9; i++){
-      for(int j = 0; j < 9; j++){
-        if(graph[prevStack[top]][i] == graph[start][j])
-
-
-      }
-    }
-
-    start = prevStack[top];
-    for(int i = top; i < size; i++)
-      prevStack[i] = -1;
-    top--;
-    printf("\nnew tail %d\n",start);
-
-    for(int i = 0; i < size; i++){
-      for(int j = 0; j < 9; j++){
-        if(graph[start][j] == i)
-          break;
-        if(graph[start][j] == -1){
-          checked[i] = 0;
-          break;
-        }
-      }
-    }
-
-    //error check printing
-    printf("\n\n");
-    for(int i = 0; i < size; i++){
-      printf("%d ", used[i]);
-      if((i+1) % dimension == 0)
-        printf("\n");
-    }
-    printf("\n");
-    printf("\n");
-    for(int i = 0; i < size; i++){
-        printf("%d ",checked[i]);
-        if((i+1) % dimension == 0)
-          printf("\n");
-    }
-    printf("\n");
-
-    findWords(start,used,checked,graph,solved);
+        printf("\n\t");
   }
+  printf("\n");
+}
 
-
-
-
-  //modified dfs with used and checked instead of visited
-  //used is part of the word, checked is a box that does not
-  //create a valid prefix
-  for(int i = 0; i < 9; i++){
-
-    if(graph[start][i] != -1 && (!used[graph[start][i]] && !checked[graph[start][i]])){
-      append(word,board[graph[start][i]]);
-      if(searchSubstring(root,word)){
-        //error check printing
-        printf("\n\n");
-        for(int i = 0; i < size; i++){
-          printf("%d ", used[i]);
-          if((i+1) % dimension == 0)
-            printf("\n");
-        }
-        printf("\n");
-        printf("\n");
-        for(int i = 0; i < size; i++){
-            printf("%d ",checked[i]);
-            if((i+1) % dimension == 0)
-              printf("\n");
-        }
-        printf("\n");
-
-        if(search(root,word)){
-          if (foundWords == NULL){
-            printf("Error opening file!\n");
-            exit(1);
-          }
-          fprintf(foundWords,"%s\n",word);
-        }
-        used[graph[start][i]] = 1;
-        top++;
-        prevStack[top] = start;
-
-        for(int j = 0; j < 9; j++){
-          checked[graph[start][j]] = 0;
-        }
-
-
-        printf("if %s\n",word);
-        printf("start %d top %d\n",start,top);
-        for(int j = 0; j<size;j++)
-          printf("%d ", prevStack[j]);
-        printf("\n\n");
-
-        findWords(graph[start][i],used,checked,graph,solved);
-      }
-      else{
-        printf("el %s\n",word);
-        printf("start %d top %d\n",start,top);
-        for(int j = 0; j<size;j++)
-          printf("%d ", prevStack[j]);
-        printf("\n\n");
-
-        depend(word);
-        checked[graph[start][i]] = 1;
-
-        findWords(start,used,checked,graph,solved);
-      }
-    }
+int score(char* word){
+  int length = strlen(word);
+  if(length <= 4){
+    totalScore += 1;
+    return 1;
   }
-}*/
+  else if(length == 5){
+    totalScore += 2;
+    return 2;
+  }
+  else if(length == 6){
+    totalScore += 3;
+    return 3;
+  }
+  else if(length == 7){
+    totalScore += 5;
+    return 5;
+  }
+  else if(length >= 8){
+    totalScore += 11;
+    return 11;
+  }
+  return 0;
+}
