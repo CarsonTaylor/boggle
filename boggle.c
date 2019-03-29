@@ -61,13 +61,14 @@ void displayBoard();
 int score(char* word);
 
 int main(int argc, char *argv[]) {
+
   //welcome sequence
   welcome();
 
   //gets and sets dimension and size of board
   dimension = 0;
   printf("Enter the dimesion of your board, n -- (board will be n x n squares)\n\n");
-  printf("Board sizes larger than 100 may take significantly longer to run\n\n-> ");
+  printf("Board sizes larger than 100 may take more than 15 seconds to run\n\n-> ");
   scanf("%d",&dimension);
   size = dimension*dimension;
 
@@ -83,22 +84,35 @@ int main(int argc, char *argv[]) {
   buildBoard();
   displayBoard();
 
+
   //build trie from dictionary file
   FILE* dict = fopen("dict.txt", "r");
   root = getNode();
-  char dictWord[128] = "";
+  char *dictWord;
+  dictWord = malloc(sizeof(char)*128);
   while(fgets(dictWord,128,dict)){
-    if(strlen(dictWord) > 2 ){
-      dictWord[strlen(dictWord)-1] = '\0';
+    dictWord[strlen(dictWord)-1] = '\0';
+    if(strlen(dictWord) > 2 && isLower(dictWord)){
       insert(root, dictWord);
     }
   }
   fclose(dict);
 
+  /*unsigned long wordCount1 = 0;
+  int level1 = 0;
+  char str1[128];
+  int tab1 = 0;
+  printf("\nwords in root trie\n\n");
+  display(root,str1,level1,&tab1,&wordCount1);
+  printf("\n\n");*/
+
+
   //initialize variables for runtime calculation
   clock_t start,end;
   double cpu_time_used;
   start = clock();
+
+
 
   //declare and initialize adjacency list for graph of board
   int** adList;
