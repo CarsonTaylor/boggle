@@ -6,7 +6,7 @@ struct Node {
 
 
 int charToIndex(char c){
-  return (int)c - (int)'A';
+  return (int)c - (int)'a';
 }
 
 //borrowed from geeksforgeeks
@@ -17,11 +17,11 @@ struct Node *getNode(){
   pNode = (struct Node *)malloc(sizeof(struct Node));
 
   if (pNode){
-      int i;
+
 
       pNode->isLeaf = 0;
 
-      for (i = 0; i < 26; i++)
+      for (int i = 0; i < 26; i++)
           pNode->children[i] = NULL;
   }
 
@@ -87,7 +87,7 @@ int searchSubstring(struct Node *root, const char *key){
 }
 
 //modified from geeksforgeeks
-void display(struct Node* root, char str[], int level)
+void display(struct Node* root, char str[], int level, int* tab)
 {
     // If node is leaf node, it indiicates end
     // of string, so a null charcter is added
@@ -95,7 +95,15 @@ void display(struct Node* root, char str[], int level)
     if (root->isLeaf)
     {
         str[level] = '\0';
-        printf("%s\n",str);
+        if(strlen(str) < 8)
+          printf("%s\t\t\t",str);
+        else if(strlen(str) < 16)
+          printf("%s\t\t",str);
+        else
+          printf("%s\t",str);
+        *tab = *tab + 1;
+        if(*tab%4==0)
+          printf("\n");
     }
 
     int i;
@@ -108,7 +116,7 @@ void display(struct Node* root, char str[], int level)
         if (root->children[i])
         {
             str[level] = i + 'a';
-            display(root->children[i], str, level + 1);
+            display(root->children[i], str, level + 1,tab);
         }
     }
 }
