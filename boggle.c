@@ -61,7 +61,6 @@ void displayBoard();
 int score(char* word);
 
 int main(int argc, char *argv[]) {
-
   //welcome sequence
   welcome();
 
@@ -84,7 +83,6 @@ int main(int argc, char *argv[]) {
   buildBoard();
   displayBoard();
 
-
   //build trie from dictionary file
   FILE* dict = fopen("dict.txt", "r");
   root = getNode();
@@ -98,21 +96,10 @@ int main(int argc, char *argv[]) {
   }
   fclose(dict);
 
-  /*unsigned long wordCount1 = 0;
-  int level1 = 0;
-  char str1[128];
-  int tab1 = 0;
-  printf("\nwords in root trie\n\n");
-  display(root,str1,level1,&tab1,&wordCount1);
-  printf("\n\n");*/
-
-
   //initialize variables for runtime calculation
   clock_t start,end;
   double cpu_time_used;
   start = clock();
-
-
 
   //declare and initialize adjacency list for graph of board
   int** adList;
@@ -160,7 +147,6 @@ int main(int argc, char *argv[]) {
   end = clock();
   cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 
-
   //check words inputted by user
   inputRoot = getNode();
   char* input = malloc(sizeof(char) * 50);
@@ -198,6 +184,7 @@ int main(int argc, char *argv[]) {
   display(foundRoot,str,level,&tab,&wordCount);
   printf("\n\n");
 
+  //display endgame stats
   printf("Computer found all %lu words in a %d x %d board in %f seconds\n",wordCount,dimension,dimension,cpu_time_used);
   printf("for a total score of %lu\n\n", totalComputerScore);
   printf("Your total score is %lu\n\n",totalUserScore);
@@ -349,6 +336,7 @@ void buildBoard(){
         randDice[i] = temp;
       }
     }
+    //assign random dice values to board
     int diceFace = rand() % 6;
     board[count] = dice[randDice[count%16]][diceFace];
     count++;
@@ -399,6 +387,7 @@ void displayBoard(){
   printf("\n");
 }
 
+//calculates score for a given word
 int score(char* word){
   int length = strlen(word);
   if(length <= 4){
