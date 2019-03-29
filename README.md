@@ -7,7 +7,8 @@ If you are on a unix system, run the loadDict.sh bash script with the command
 ```
 $ bash loadDict.sh
 ```
-to build the dictionary file.  If for some reason this doesn't work you can download an alternative dictionary file from [here](https://alabama.box.com/s/6vm2svlcuoi757uon3972mbxv5ptuejr).
+to build the dictionary file.  If for some reason this doesn't work you can download the dictionary file from [here](https://alabama.box.com/s/6vm2svlcuoi757uon3972mbxv5ptuejr).
+The dictionary file is named "dict.txt" and contains only words consisting of lowercase characters.
 
 Once the dictionary file is loaded, compile the project with the command
 
