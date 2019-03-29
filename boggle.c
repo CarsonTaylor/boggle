@@ -150,8 +150,8 @@ int main(int argc, char *argv[]) {
   //check words inputted by user
   inputRoot = getNode();
   char* input = malloc(sizeof(char) * 50);
-  printf("Enter found words (enter DONE to stop): ");
-  scanf("50%s", input);
+  printf("Enter found words in lowercase letters (enter DONE to stop): ");
+  scanf("%50s", input);
   while(strncmp(input, "DONE", 4) != 0){
     if(isLower(input)){
       int result = search(foundRoot,input);
@@ -167,11 +167,11 @@ int main(int argc, char *argv[]) {
       }
       else
         printf("\nInvalid word\n\n");
-      scanf("%s",input);
+      scanf("%50s",input);
     }
     else{
-      printf("\nTo avoid invalid input, please input words with only lowercase letters\n\n");
-      scanf("%s",input);
+      printf("\nInvalid input, please input words with only lowercase letters\n\n");
+      scanf("%50s",input);
     }
   }
 
