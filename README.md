@@ -31,4 +31,4 @@ When you are done finding words, or want to check the computer's output, input D
 
 Once the game is complete, the program will print your score along with the computers score (which is the maximum.)
 
-##Thanks!
+## Thanks!
