@@ -13,16 +13,12 @@ int charToIndex(char c){
 // Returns new trie node (initialized to NULLs)
 struct Node *getNode(){
   struct Node *pNode = NULL;
-
   pNode = (struct Node *)malloc(sizeof(struct Node));
-
   if (pNode){
       pNode->isLeaf = 0;
-
       for (int i = 0; i < 26; i++)
           pNode->children[i] = NULL;
   }
-
   return pNode;
 }
 
@@ -33,15 +29,12 @@ void insert(struct Node *root, const char *key) {
     int index;
 
     struct Node *pCrawl = root;
-
     for (level = 0; level < length; level++){
         index = charToIndex(key[level]);
         if (!pCrawl->children[index])
             pCrawl->children[index] = getNode();
-
         pCrawl = pCrawl->children[index];
     }
-
     // mark last node as leaf
     pCrawl->isLeaf = 1;
 }
@@ -56,10 +49,8 @@ int search(struct Node *root, const char *key){
 
     for (level = 0; level < length; level++){
         index = charToIndex(key[level]);
-
         if (!pCrawl->children[index])
             return 0;
-
         pCrawl = pCrawl->children[index];
     }
 

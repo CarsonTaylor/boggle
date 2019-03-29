@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
       scanf("%s",input);
     }
     else{
-      printf("\nInvalid input, please input words with only lowercase letters\n\n");
+      printf("\nTo avoid invalid input, please input words with only lowercase letters\n\n");
       scanf("%s",input);
     }
   }
@@ -213,24 +213,30 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
       longjmp(solved, 1);
 
     //dead-end procedure
+    //reset checked boxes
     for(int i = start+1; i < start+dimension+3; i++){
       if(i < size)
       checked[i] = 0;
     }
+    //mark current index as checked and unmark as used
     checked[start] = 1;
     used[start] = 0;
+    //remove letter at current index from word
     depend(word);
 
+    //mark adjacent indices as checked
     for(int i = 0; i < 9; i++)
       if(graph[prevStack[top]][i] != -1 && graph[prevStack[top]][i] < start &&
          !used[graph[prevStack[top]][i]])
         checked[graph[prevStack[top]][i]] = 1;
 
+    //set new start as the previous letter in current word
     start = prevStack[top];
     for(int i = top; i < size; i++)
       prevStack[i] = -1;
     top--;
 
+    //reset any remaining checked boxes
     for(int i = start - (dim*2) - 2; i < start + (dim*2) + 2; i++){
       if(i < size){
         for(int j = 0; j < 9; j++){
@@ -253,18 +259,24 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
   for(int i = 0; i < 9; i++){
     if(graph[start][i] != -1 && (!used[graph[start][i]] && !checked[graph[start][i]])){
       append(word,board[graph[start][i]]);
+      //if current word is valid substring
       if(searchSubstring(root,word)){
+        //if current word is valid word
         if(search(root,word)){
+          //if current word has not alread been found
+          //add to found words and update score
           if(!search(foundRoot,word)){
             insert(foundRoot,word);
             totalComputerScore += score(word);
           }
         }
 
+        //mark used and set new end of word
         used[graph[start][i]] = 1;
         top++;
         prevStack[top] = start;
 
+        //reset adjacent checked squares
         for(int j = 0; j < 9; j++){
           checked[graph[start][j]] = 0;
         }
@@ -272,6 +284,7 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
         findWords(graph[start][i],used,checked,graph,solved);
       }
       else{
+        //remove last char from word and mark index as checked
         depend(word);
         checked[graph[start][i]] = 1;
         findWords(start,used,checked,graph,solved);
