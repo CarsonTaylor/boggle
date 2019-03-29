@@ -25,7 +25,7 @@ to start the game.
 
 You can input any integer for the size of the board, but be warned that values greater than 100 will take longer than 10 seconds to run.  A board of 200x200 will take approximately 10 minutes to run.  Inputting an invalid value here will cause the program to terminate. Entering an integer followed by other non-integer characters will take the integer portion and run the program.
 
-From there, you can input any string to check on the board but only strings containing lower case letters exclusively will be checked for validity.
+From there, you can input any string to check on the board but only strings containing lower case letters exclusively will be checked for validity.  Input strings longer than 50 will also not be checked as the longest word in dict.txt is 22 charachters.
 
 When you are done finding words, or want to check the computer's output, input DONE to see the words the computer found, along with the program runtime.
 
