@@ -17,8 +17,6 @@ struct Node *getNode(){
   pNode = (struct Node *)malloc(sizeof(struct Node));
 
   if (pNode){
-
-
       pNode->isLeaf = 0;
 
       for (int i = 0; i < 26; i++)
@@ -87,13 +85,13 @@ int searchSubstring(struct Node *root, const char *key){
 }
 
 //modified from geeksforgeeks
-void display(struct Node* root, char str[], int level, int* tab)
+void display(struct Node* root, char str[], int level, int* tab, unsigned long* wordCount)
 {
     // If node is leaf node, it indiicates end
     // of string, so a null charcter is added
     // and string is displayed
-    if (root->isLeaf)
-    {
+    if (root->isLeaf){
+        *wordCount = *wordCount + 1;
         str[level] = '\0';
         if(strlen(str) < 8)
           printf("%s\t\t\t",str);
@@ -107,16 +105,14 @@ void display(struct Node* root, char str[], int level, int* tab)
     }
 
     int i;
-    for (i = 0; i < 26; i++)
-    {
+    for (i = 0; i < 26; i++){
         // if NON NULL child is found
         // add parent key to str and
         // call the display function recursively
         // for child node
-        if (root->children[i])
-        {
+        if (root->children[i]){
             str[level] = i + 'a';
-            display(root->children[i], str, level + 1,tab);
+            display(root->children[i], str, level + 1,tab,wordCount);
         }
     }
 }

@@ -41,11 +41,14 @@ char word[50] = {'\0'};
 
 //root of lookup trie
 struct Node *root;
-//root of trie for foundWords
+//root of trie for found words
 struct Node *foundRoot;
+//root of trie for user input words
+struct Node *inputRoot;
 
 //total score
-unsigned long totalScore;
+unsigned long totalUserScore;
+unsigned long totalComputerScore;
 
 void initDice();
 void buildBoard();
@@ -143,34 +146,47 @@ int main(int argc, char *argv[]) {
   end = clock();
   cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 
+
   //check words inputted by user
+  inputRoot = getNode();
   char* input = malloc(sizeof(char) * 50);
   printf("Enter found words (enter DONE to stop): ");
   scanf("50%s", input);
   while(strncmp(input, "DONE", 4) != 0){
     if(isLower(input)){
       int result = search(foundRoot,input);
-      if(result)
-        printf("\nValid: Score - %d\n",score(input));
+      if(result){
+        int duplicate = search(inputRoot,input);
+        if(!duplicate){
+          insert(inputRoot,input);
+          printf("\nValid: Score - %d\n\n",score(input));
+          totalUserScore += score(input);
+        }
+        else
+          printf("\nWord already found\n\n");
+      }
       else
-        printf("Invalid word\n");
+        printf("\nInvalid word\n\n");
       scanf("%s",input);
     }
     else{
-      printf("Invalid input, please input words with only lowercase letters\n");
+      printf("\nInvalid input, please input words with only lowercase letters\n\n");
       scanf("%s",input);
     }
   }
 
   //display all found words
+  unsigned long wordCount = 0;
   int level = 0;
   char str[128];
   int tab = 0;
-  display(foundRoot,str,level,&tab);
+  printf("\n---------------Words found by computer----------------\n\n");
+  display(foundRoot,str,level,&tab,&wordCount);
   printf("\n\n");
 
-  printf("Computer found all words in a %d x %d board in %f seconds\n",dimension,dimension,cpu_time_used);
-  printf("Your total score is %lu\n\n",totalScore);
+  printf("Computer found all %lu words in a %d x %d board in %f seconds\n",wordCount,dimension,dimension,cpu_time_used);
+  printf("for a total score of %lu\n\n", totalComputerScore);
+  printf("Your total score is %lu\n\n",totalUserScore);
 
   return(0);
 }
@@ -238,8 +254,10 @@ void findWords(int start, int* used, int* checked, int** graph, jmp_buf solved){
       append(word,board[graph[start][i]]);
       if(searchSubstring(root,word)){
         if(search(root,word)){
-          if(!search(foundRoot,word))
+          if(!search(foundRoot,word)){
             insert(foundRoot,word);
+            totalComputerScore += score(word);
+          }
         }
 
         used[graph[start][i]] = 1;
@@ -370,23 +388,18 @@ void displayBoard(){
 int score(char* word){
   int length = strlen(word);
   if(length <= 4){
-    totalScore += 1;
     return 1;
   }
   else if(length == 5){
-    totalScore += 2;
     return 2;
   }
   else if(length == 6){
-    totalScore += 3;
     return 3;
   }
   else if(length == 7){
-    totalScore += 5;
     return 5;
   }
   else if(length >= 8){
-    totalScore += 11;
     return 11;
   }
   return 0;
