@@ -19,7 +19,7 @@ then run
 ```
 $ ./boggle
 ```
-to start the game.
+to start a game of boggle.
 
 ## Gameplay
 
