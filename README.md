@@ -29,6 +29,6 @@ From there, you can input any string to check on the board but only strings cont
 
 When you are done finding words, or want to check the computer's output, input DONE to see the words the computer found, along with the program runtime. If the player tries to input a word once 3 minutes has elapsed, the program tells them time is up and continues.
 
-Once the game is complete, the program will print the player's score along with the computer's score.  You can then either choose to play another game or exit the program, inputting invalid values here will prompt for input again.
+Once the game is complete, the program will print the player's score along with the computer's score.  You can then either choose to play another game or exit the program.  Inputting invalid values here will prompt for input again.
 
 ## Thanks!
