@@ -64,130 +64,140 @@ int main(int argc, char *argv[]) {
   //welcome sequence
   welcome();
 
-  //gets and sets dimension and size of board
-  dimension = 0;
-  printf("Enter the dimesion of your board, n -- (board will be n x n squares)\n\n");
-  printf("Board sizes larger than 100 may not fit well on screen\n\n-> ");
-  scanf("%d",&dimension);
-  size = dimension*dimension;
+  char* playAgain = malloc(sizeof(char) * 5);
+  while(strncmp(playAgain,"no",2)!=0){
+    //gets and sets dimension and size of board
+    dimension = 0;
+    printf("Enter the dimesion of your board, n -- (board will be n x n squares)\n\n");
+    printf("Board sizes larger than 100 may not fit well on screen\n\n-> ");
+    scanf("%d",&dimension);
+    size = dimension*dimension;
 
-  if(dimension == 0){
-    printf("Invalid board size. Exiting program\n\n");
-    exit(1);
-  }
-
-  //initializes dice with appropiate letters for
-  //proper boggle letter distribution
-  initDice();
-  //build and display random board of specified size
-  buildBoard();
-  displayBoard();
-
-  //build trie from dictionary file
-  FILE* dict = fopen("dict.txt", "r");
-  root = getNode();
-  char *dictWord;
-  dictWord = malloc(sizeof(char)*128);
-  while(fgets(dictWord,128,dict)){
-    dictWord[strlen(dictWord)-1] = '\0';
-    if(strlen(dictWord) > 2 && isLower(dictWord)){
-      insert(root, dictWord);
+    if(dimension == 0){
+      printf("Invalid board size. Exiting program\n\n");
+      exit(1);
     }
-  }
-  fclose(dict);
 
-  //initialize variables for runtime calculation
-  clock_t start,end;
-  double cpu_time_used;
-  start = clock();
+    //initializes dice with appropiate letters for
+    //proper boggle letter distribution
+    initDice();
+    //build and display random board of specified size
+    buildBoard();
+    displayBoard();
 
-  //declare and initialize adjacency list for graph of board
-  int** adList;
-  adList = adjacencyList(dimension);
-
-  //initialize neighbours array with proper values
-  //each index holds the numbers of valid neighbours
-  //at board[i]
-  neighbours = malloc(sizeof(int) * size);
-  for(int i = 0; i < size; i++)
-    neighbours[i] =0;
-  for(int i = 0; i < size; i++){
-    for(int j = 0; j < 9; j++){
-      if(adList[i][j] != -1)
-        neighbours[i]++;
+    //build trie from dictionary file
+    FILE* dict = fopen("dict.txt", "r");
+    root = getNode();
+    char *dictWord;
+    dictWord = malloc(sizeof(char)*128);
+    while(fgets(dictWord,128,dict)){
+      dictWord[strlen(dictWord)-1] = '\0';
+      if(strlen(dictWord) > 2 && isLower(dictWord)){
+        insert(root, dictWord);
+      }
     }
-  }
+    fclose(dict);
 
-  //allocate space for search arrays
-  //used is part of the word
-  //checked is an index that does not create a valid prefix
-  //prevStack holds the indexes of letters already used in the current word
-  used = malloc(sizeof(int) * size);
-  checked = malloc(sizeof(int) * size);
-  prevStack = malloc(sizeof(int) * size);
+    //initialize variables for runtime calculation
+    clock_t start,end;
+    double cpu_time_used;
+    start = clock();
 
-  //initialize root of trie for found words
-  foundRoot = getNode();
+    //declare and initialize adjacency list for graph of board
+    int** adList;
+    adList = adjacencyList(dimension);
 
-  //for each letter on the board, find all possible words starting
-  //with that letter.  Reset search arrays and temporary
-  //word variable before each search
-  for(int i = 0; i < size; i++){
-    memset(used, 0, size * sizeof(used[0]));
-    memset(checked, 0, size * sizeof(checked[0]));
-    memset(prevStack, -1, size * sizeof(prevStack[0]));
-    //printf("after other mallocs\n");
-    word[0] = '\0';
-    jmp_buf solved;
-    startLetter = i;
-    if(!setjmp(solved)) findWords(i,used,checked,adList,solved);
-  }
+    //initialize neighbours array with proper values
+    //each index holds the numbers of valid neighbours
+    //at board[i]
+    neighbours = malloc(sizeof(int) * size);
+    for(int i = 0; i < size; i++)
+      neighbours[i] =0;
+    for(int i = 0; i < size; i++){
+      for(int j = 0; j < 9; j++){
+        if(adList[i][j] != -1)
+          neighbours[i]++;
+      }
+    }
 
-  //stop runtime calculations
-  end = clock();
-  cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    //allocate space for search arrays
+    //used is part of the word
+    //checked is an index that does not create a valid prefix
+    //prevStack holds the indexes of letters already used in the current word
+    used = malloc(sizeof(int) * size);
+    checked = malloc(sizeof(int) * size);
+    prevStack = malloc(sizeof(int) * size);
 
-  //check words inputted by user
-  inputRoot = getNode();
-  char* input = malloc(sizeof(char) * 50);
-  printf("Enter found words in lowercase letters (enter DONE to stop): ");
-  scanf("%50s", input);
-  while(strncmp(input, "DONE", 4) != 0){
-    if(isLower(input)){
-      int result = search(foundRoot,input);
-      if(result){
-        int duplicate = search(inputRoot,input);
-        if(!duplicate){
-          insert(inputRoot,input);
-          printf("\nValid: Score - %d\n\n",score(input));
-          totalUserScore += score(input);
+    //initialize root of trie for found words
+    foundRoot = getNode();
+
+    //for each letter on the board, find all possible words starting
+    //with that letter.  Reset search arrays and temporary
+    //word variable before each search
+    for(int i = 0; i < size; i++){
+      memset(used, 0, size * sizeof(used[0]));
+      memset(checked, 0, size * sizeof(checked[0]));
+      memset(prevStack, -1, size * sizeof(prevStack[0]));
+      //printf("after other mallocs\n");
+      word[0] = '\0';
+      jmp_buf solved;
+      startLetter = i;
+      if(!setjmp(solved)) findWords(i,used,checked,adList,solved);
+    }
+
+    //stop runtime calculations
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+    //check words inputted by user
+    inputRoot = getNode();
+    char* input = malloc(sizeof(char) * 50);
+    printf("Enter found words in lowercase letters (enter DONE to stop): ");
+    scanf("%50s", input);
+    while(strncmp(input, "DONE", 4) != 0){
+      if(isLower(input)){
+        int result = search(foundRoot,input);
+        if(result){
+          int duplicate = search(inputRoot,input);
+          if(!duplicate){
+            insert(inputRoot,input);
+            printf("\nValid: Score - %d\n\n",score(input));
+            totalUserScore += score(input);
+          }
+          else
+            printf("\nWord already found\n\n");
         }
         else
-          printf("\nWord already found\n\n");
+          printf("\nInvalid word\n\n");
+        scanf("%50s",input);
       }
-      else
-        printf("\nInvalid word\n\n");
-      scanf("%50s",input);
+      else{
+        printf("\nInvalid input, please input words with only lowercase letters\n\n");
+        scanf("%50s",input);
+      }
     }
-    else{
-      printf("\nInvalid input, please input words with only lowercase letters\n\n");
-      scanf("%50s",input);
+
+    //display all found words
+    unsigned long wordCount = 0;
+    int level = 0;
+    char str[128];
+    int tab = 0;
+    printf("\n---------------Words found by computer----------------\n\n");
+    display(foundRoot,str,level,&tab,&wordCount);
+    printf("\n\n");
+
+    //display endgame stats
+    printf("Computer found all %lu words in a %d x %d board in %f seconds\n",wordCount,dimension,dimension,cpu_time_used);
+    printf("for a total score of %lu\n\n", totalComputerScore);
+    printf("Your total score is %lu\n\n",totalUserScore);
+
+    printf("Would you like to play again? (enter \"yes\" or \"no\"): ");
+    scanf("%5s", playAgain);
+    while(strncmp(playAgain,"yes",3) != 0 && strncmp(playAgain,"no",2) != 0){
+      printf("Invalid input\n\nWould you like to play again? (enter \"yes\" or \"no\"): ");
+      scanf("%5s", playAgain);
     }
   }
-
-  //display all found words
-  unsigned long wordCount = 0;
-  int level = 0;
-  char str[128];
-  int tab = 0;
-  printf("\n---------------Words found by computer----------------\n\n");
-  display(foundRoot,str,level,&tab,&wordCount);
-  printf("\n\n");
-
-  //display endgame stats
-  printf("Computer found all %lu words in a %d x %d board in %f seconds\n",wordCount,dimension,dimension,cpu_time_used);
-  printf("for a total score of %lu\n\n", totalComputerScore);
-  printf("Your total score is %lu\n\n",totalUserScore);
 
   return(0);
 }
