@@ -25,10 +25,10 @@ to start a game of boggle.
 
 You can input any integer for the size of the board, but be warned that values greater than 100 will take longer than 10 seconds to run and may not look great on the screen. Resizing the terminal window can sometimes help with this. A board of 200x200 will take approximately 10 minutes to run.  Inputting an invalid value here will cause the program to terminate. Entering an integer followed by other non-integer characters will take the integer portion and run the program.
 
-From there, you can input any string to check on the board but only strings containing lower case letters exclusively will be checked for validity.  Input strings longer than 50 will also not be checked as the longest word in dict.txt is 22 characters.
+From there, you can input any string to check on the board but only strings containing lower case letters exclusively will be checked for validity.  Input strings longer than 50 will also not be checked as the longest word in dict.txt is 22 characters.  After inputting a word, the program informs the player how much time is remaining for the current game.
 
-When you are done finding words, or want to check the computer's output, input DONE to see the words the computer found, along with the program runtime.
+When you are done finding words, or want to check the computer's output, input DONE to see the words the computer found, along with the program runtime. If the player tries to input a word once 3 minutes has elapsed, the program tells them time is up and continues.
 
-Once the game is complete, the program will print your score along with the computers score.
+Once the game is complete, the program will print the player's score along with the computer's score.  You can then either choose to play another game or exit the program, inputting invalid values here will prompt for input again.
 
 ## Thanks!
