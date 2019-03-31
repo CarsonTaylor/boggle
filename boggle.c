@@ -6,10 +6,6 @@ word lookup and a modified DFS for
 finding words
 */
 
-/////////TODO////////////
-//add classic or new boggle variations
-//Handle Qu piece
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
