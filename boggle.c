@@ -68,6 +68,10 @@ int main(int argc, char *argv[]) {
   //while loop for multiple games
   char* playAgain = malloc(sizeof(char) * 5);
   while(strncmp(playAgain,"no",2)!=0){
+    //reset scores
+    totalUserScore = 0;
+    totalComputerScore = 0;
+    
     //gets and sets dimension and size of board
     dimension = 0;
     printf("Enter the dimesion of your board, n -- (board will be n x n squares)\n\n");
