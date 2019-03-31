@@ -59,11 +59,13 @@ int isLower(char* s);
 void welcome();
 void displayBoard();
 int score(char* word);
+void goodbye();
 
 int main(int argc, char *argv[]) {
-  //welcome sequence
+  //welcome message
   welcome();
 
+  //while loop for multiple games
   char* playAgain = malloc(sizeof(char) * 5);
   while(strncmp(playAgain,"no",2)!=0){
     //gets and sets dimension and size of board
@@ -152,29 +154,48 @@ int main(int argc, char *argv[]) {
     //check words inputted by user
     inputRoot = getNode();
     char* input = malloc(sizeof(char) * 50);
+
+    //variables for timer
+    time_t timer_start,timer_current;
+    int elapsed = 0;
+    timer_start = time(NULL);
+
     printf("Enter found words in lowercase letters (enter DONE to stop): ");
     scanf("%50s", input);
     while(strncmp(input, "DONE", 4) != 0){
+      timer_current = time(NULL);
+      elapsed = timer_current - timer_start;
+      if(elapsed >= 180)
+        break;
+
       if(isLower(input)){
         int result = search(foundRoot,input);
         if(result){
           int duplicate = search(inputRoot,input);
           if(!duplicate){
             insert(inputRoot,input);
-            printf("\nValid: Score - %d\n\n",score(input));
+            printf("\nValid: Score - %d\nTime remaining - %d seconds\n\n",score(input),180-elapsed);
             totalUserScore += score(input);
           }
           else
-            printf("\nWord already found\n\n");
+            printf("\nWord already found\nTime remaining - %d seconds\n\n",180-elapsed);
         }
         else
-          printf("\nInvalid word\n\n");
+          printf("\nInvalid word\nTime remaining - %d seconds\n\n",180-elapsed);
         scanf("%50s",input);
       }
       else{
-        printf("\nInvalid input, please input words with only lowercase letters\n\n");
+        printf("\nInvalid input, please input words with only lowercase letters\nTime remaining - %d seconds\n\n",180-elapsed);
         scanf("%50s",input);
       }
+    }
+    if(elapsed >= 180){
+      char ESC=27;
+      printf("%c[1m",ESC);  /*- turn on bold */
+      printf("%c[5m",ESC);  /*- turn on blinking */
+      printf("%c[31m",ESC);  /*- turn on red */
+      printf("\n\t\tTIME'S UP!\n\n");
+      printf("%c[0m",ESC); /* turn off all */
     }
 
     //display all found words
@@ -198,6 +219,9 @@ int main(int argc, char *argv[]) {
       scanf("%5s", playAgain);
     }
   }
+
+  //goodbye message
+  goodbye();
 
   return(0);
 }
@@ -393,10 +417,10 @@ int isLower(char* s){
 void welcome(){
   char ESC=27;
   printf("%c[1m",ESC);  /*- turn on bold */
-  printf("%c[5m",ESC);  /*- turn on bold */
-  printf("%c[92m",ESC);  /*- turn on bold */
+  printf("%c[5m",ESC);  /*- turn on blinking */
+  printf("%c[92m",ESC);  /*- turn on green */
   printf("\n\t\tWELCOME TO BOGGLE\n\n");
-  printf("%c[0m",ESC); /* turn off bold */
+  printf("%c[0m",ESC); /* turn off all */
 }
 
 //display board
@@ -429,4 +453,13 @@ int score(char* word){
     return 11;
   }
   return 0;
+}
+
+void goodbye(){
+  char ESC=27;
+  printf("%c[1m",ESC);  /*- turn on bold */
+  printf("%c[5m",ESC);  /*- turn on blinking */
+  printf("%c[92m",ESC);  /*- turn on green */
+  printf("\n\t\tTHANKS FOR PLAYING\n\n");
+  printf("%c[0m",ESC); /* turn off all */
 }
