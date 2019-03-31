@@ -13,7 +13,7 @@ The dictionary file is named "dict.txt" and contains only words consisting of lo
 Once the dictionary file is loaded, compile the project with the command
 
 ```
-$ gcc -std=c11 boggle.c -o boggle
+$ make
 ```
 then run
 ```
