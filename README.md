@@ -1,5 +1,5 @@
 # BOGGLE
-This project allows the user to play boggle on any size boggle board.  For my video walkthrough see [here](https://alabama.box.com/s/1cun9f70saqd69l1fu33yh73gl076z3m)
+This project allows the user to play boggle on any size boggle board.  For my video walkthrough see [here](https://alabama.box.com/s/ser0zppj3jhtshcvrex4parepf4wfica)
 
 ## Getting Started
 If you are on a unix system, run the loadDict.sh bash script with the command
