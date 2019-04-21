@@ -31,6 +31,7 @@ When you are done finding words, or want to check the computer's output, input D
 
 Once the game is complete, the program will print the player's score along with the computer's score.  You can then either choose to play another game or exit the program.  Inputting invalid values here will prompt for input again.
 
-Borrowed code from geeks for geeks [here] (https://www.geeksforgeeks.org/trie-insert-and-search/)
+Borrowed code from geeks for geeks [here] 
+(https://www.geeksforgeeks.org/trie-insert-and-search/)
 
 ## Thanks!
